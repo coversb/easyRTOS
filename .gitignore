@@ -1,0 +1,6 @@
+
+# compile files and other auto-created files
+project/demo/DebugConfig
+project/demo/RTE
+project/demo/demo.uvguix.*
+project/demo/f103_app
