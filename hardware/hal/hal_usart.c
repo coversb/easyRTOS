@@ -17,6 +17,7 @@
 * Include Files
 ******************************************************************************/
 #include <string.h>
+#include "hal_rcc.h"
 #include "hal_usart.h"
 #include "hal_board.h"
 #include "hal_gpio.h"
@@ -82,7 +83,8 @@ static void hal_usart1_begin(u32 baundrate)
     os_ds_que_create(&hal_usart1_rx_que, HAL_USART1_RX_BUFF, sizeof(HAL_USART1_RX_BUFF));
 
     /*RCC config*/
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);
+    hal_rcc_enable(BOARD_USART1_RCC);
+    hal_rcc_enable(BOARD_USART1_IO_RCC);
 
     /*GPIO config*/
     hal_gpio_set_mode(BOARD_USART1_TX, GPIO_Mode_AF_PP);
@@ -321,8 +323,8 @@ static void hal_usart2_begin(u32 baundrate)
     os_ds_que_create(&hal_usart2_rx_que, HAL_USART2_RX_BUFF, sizeof(HAL_USART2_RX_BUFF));
 
     /*RCC config*/
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);
+    hal_rcc_enable(BOARD_USART2_RCC);
+    hal_rcc_enable(BOARD_USART2_IO_RCC);
 
     /*GPIO config*/
     hal_gpio_set_mode(BOARD_USART2_TX, GPIO_Mode_AF_PP);   //USART2 TX
@@ -562,8 +564,8 @@ static void hal_usart3_begin(u32 baundrate)
     os_ds_que_create(&hal_usart3_rx_que, HAL_USART3_RX_BUFF, sizeof(HAL_USART3_RX_BUFF));
 
     /*RCC config*/
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);
+    hal_rcc_enable(BOARD_USART3_RCC);
+    hal_rcc_enable(BOARD_USART3_IO_RCC);
 
     /*GPIO config*/
     hal_gpio_set_mode(BOARD_USART3_TX, GPIO_Mode_AF_PP);   //USART3 TX
@@ -810,8 +812,8 @@ static void hal_uart5_begin(u32 baundrate)
     os_ds_que_create(&hal_uart5_rx_que, HAL_UART5_RX_BUFF, sizeof(HAL_UART5_RX_BUFF));
 
     /*RCC config*/
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOD, ENABLE);
+    hal_rcc_enable(BOARD_USART5_RCC);
+    hal_rcc_enable(BOARD_USART5_IO_RCC);
 
     /*GPIO config*/
     hal_gpio_set_mode(BOARD_UART5_TX, GPIO_Mode_AF_PP);   //UART5 TX

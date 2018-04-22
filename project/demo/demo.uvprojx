@@ -405,6 +405,31 @@
               <FileType>1</FileType>
               <FilePath>..\..\hardware\hal\hal_usart.c</FilePath>
             </File>
+            <File>
+              <FileName>hal_bkp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\hal\hal_bkp.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\hal\hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\hal\hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\hal\hal_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_wdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\hal\hal_wdg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -424,6 +449,11 @@
               <FileName>os_trace_log.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\middleware\os_trace_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>os_task_define.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\middleware\os_task_define.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -3,20 +3,21 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          hal_board.c
+*  file name:          os_task_define.c
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   board init support
+*  file description:   define all task
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-12      1.00                    Chen Hao
+*  change summary:   2018-4-18      1.00                    Chen Hao
 *
 ******************************************************************************/
 /******************************************************************************
 * Include Files
 ******************************************************************************/
-#include "hal_board.h"
+#include "os_task_define.h"
+#include "os_trace_log.h"
 
 /******************************************************************************
 * Macros
@@ -25,12 +26,20 @@
 /******************************************************************************
 * Variables (Extern, Global and Static)
 ******************************************************************************/
+/*
+*task function, parameters, task name, stack size, priority, handler
+*/
+static OS_TASK_INFO_TYPE os_task_info[OS_TASK_ITEM_END] = 
+{
+    /*task main functino,   parameter, task name,     stack size,      priority,            task handler*/
+    NULL, NULL, NULL, NULL, NULL, NULL
+};
 
 /******************************************************************************
 * Local Functions
 ******************************************************************************/
 /******************************************************************************
-* Function    : hal_board_init
+* Function    : os_task_create_all
 * 
 * Author      : Chen Hao
 * 
@@ -38,40 +47,27 @@
 * 
 * Return      : 
 * 
-* Description : board init
+* Description : create all task defined in os_task_info
 ******************************************************************************/
-void hal_board_init(void)
+void os_task_create_all(void)
 {
-    SystemInit();
-
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, BOARD_APP_OFFSET);
-    NVIC_PriorityGroupConfig(BOARD_NVIC_PRIO_GROUP);
+    for (uint8 idx = OS_TASK_ITEM_BEGIN; idx < OS_TASK_ITEM_END; ++idx)
+    {
+        if (NULL == os_task_info[idx].function)
+        {
+            continue;
+        }
+        os_task_create(os_task_info[idx].function,
+                                os_task_info[idx].param,
+                                os_task_info[idx].name,
+                                os_task_info[idx].stackSize,
+                                os_task_info[idx].priority,
+                                &os_task_info[idx].hdlr);
+    }
 }
 
 /******************************************************************************
-* Function    : hal_board_nvic_set_irq
-* 
-* Author      : Chen Hao
-* 
-* Parameters  : 
-* 
-* Return      : 
-* 
-* Description : set irq channel
-******************************************************************************/
-void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 SubPriority, FunctionalState Cmd)
-{
-    NVIC_InitTypeDef NVIC_InitStructure;
-
-    NVIC_InitStructure.NVIC_IRQChannel = IRQChannel;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = SubPriority;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = Cmd;
-    NVIC_Init(&NVIC_InitStructure);		
-}
-
-/******************************************************************************
-* Function    : hal_board_get_boot_type
+* Function    : os_task_print_free_stack
 * 
 * Author      : Chen Hao
 * 
@@ -81,40 +77,18 @@ void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 Su
 * 
 * Description : 
 ******************************************************************************/
-uint8 hal_board_get_boot_type(void)
+void os_task_print_free_stack(void)
 {
-    uint8 pwronType = HAL_PWRON_NORMAL;
-
-    //WWD and IWD rst
-    if ((RCC_GetFlagStatus(RCC_FLAG_WWDGRST) == SET)    
-        || (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET))
+    for (uint8 idx = OS_TASK_ITEM_BEGIN; idx < OS_TASK_ITEM_END; ++idx)
     {
-        pwronType = HAL_PWRON_WDG;
-    }	
-    else
-    //Software rst
-    if (RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)
-    {
-        pwronType = HAL_PWRON_SOFTRST;
+        uint32 freeStack;
+        freeStack = os_task_free_stack(os_task_info[idx].hdlr);
+        OS_INFO("%s FREE[%d]", os_task_info[idx].name, freeStack*4);
     }
-    else
-    if (RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET)
-    {
-        pwronType = HAL_PWRON_NORMAL;
-    }	
-    else
-    //Key rst
-    if(RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET)
-    {
-        pwronType = HAL_PWRON_KEY;
-    }
-
-    RCC_ClearFlag();
-    return pwronType;
 }
 
 /******************************************************************************
-* Function    : hal_board_reset
+* Function    : os_task_print_free_heap
 * 
 * Author      : Chen Hao
 * 
@@ -124,9 +98,8 @@ uint8 hal_board_get_boot_type(void)
 * 
 * Description : 
 ******************************************************************************/
-void hal_board_reset(void)
+void os_task_print_free_heap(void)
 {
-    __disable_irq();
-    NVIC_SystemReset();
+    OS_INFO("SYS HEAP FREE[%d]", os_sys_free_heap());
 }
 

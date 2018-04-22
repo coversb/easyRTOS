@@ -47,7 +47,13 @@
 #define DELAY_500_MS 500
 #define DELAY_1_S 1000
 
+#define SEC2MSEC (1000)
+#define MIN2MSEC (60000)
+#define DAY2SEC (86400)
+#define MIN2SEC (60)
+
 /*FreeRTOS*/
+#define OS_STACK_1K (1024)
 #define OS_MSG_BLOCK_WAIT portMAX_DELAY
 #define OS_MSG_RECV_FAILED pdFAIL
 #define OS_MSG_QUEUE_TYPE xQueueHandle
@@ -107,6 +113,7 @@ typedef struct
 /*OS API functions begin*/
 //message
 extern void os_msg_queue_send(OS_MSG_QUEUE_TYPE que, const void * const pdata, uint32 timeWait);
+extern bool os_msg_data_vaild(uint8 *p);
 //timer
 extern void os_tmr_start(OS_TMR_TYPE tmrHdlr);
 extern void os_tmr_stop(OS_TMR_TYPE tmrHdlr);
@@ -117,6 +124,11 @@ extern bool os_mutex_lock(OS_MUTEX_TYPE *mutex);
 extern bool os_mutex_try_lock(OS_MUTEX_TYPE *mutex, uint32 timeout);
 extern bool os_mutex_unlock(OS_MUTEX_TYPE *mutex);
 /*OS API functions end*/
+
+extern void os_set_task_init(uint8 idx);
+extern void os_wait_task_init_sync(void);
+
+extern uint32 os_get_tick_count(void);
 
 #endif /* __OS_MIDDLEWARE_H__ */
 

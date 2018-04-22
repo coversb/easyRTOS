@@ -3,18 +3,18 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          hal_board.h
+*  file name:          hal_flash.h
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   board init support
+*  file description:   flash driver
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-12      1.00                    Chen Hao
+*  change summary:   2018-4-17      1.00                    Chen Hao
 *
 ******************************************************************************/
-#ifndef __HAL_BOARD_H__
-#define __HAL_BOARD_H__
+#ifndef __HAL_FLASH_H__
+#define __HAL_FLASH_H__
 /******************************************************************************
 * Include Files
 ******************************************************************************/
@@ -28,21 +28,19 @@
 /******************************************************************************
 * Types
 ******************************************************************************/
-typedef enum
+typedef struct
 {
-    HAL_PWRON_NORMAL = 0,
-    HAL_PWRON_WDG,
-    HAL_PWRON_KEY,
-    HAL_PWRON_SOFTRST
-}HAL_PWRON_STATUS;
+    void (*init)(void);
+    void (*deint)(void);
+    bool (*erase)(uint32 adr);
+    uint32 (*read)(uint32 addr, uint8 *buff, uint32 len);
+    int32 (*write)(uint32 addr, uint32 *buff, uint32 len);
+}HAL_FLASH_TYPE;
 
 /******************************************************************************
 * Extern variable
 ******************************************************************************/
-extern void hal_board_init(void);
-extern void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 SubPriority, FunctionalState Cmd);
-extern uint8 hal_board_get_boot_type(void);
-extern void hal_board_reset(void);
+extern const HAL_FLASH_TYPE hwFlash;
 
-#endif /*__HAL_BOARD_H__*/
+#endif /*__HAL_FLASH_H__*/
 

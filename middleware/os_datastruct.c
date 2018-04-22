@@ -340,7 +340,7 @@ void os_ds_list_que_remove_head(OS_DS_LIST_QUEUE_TYPE *q)
 }
 
 /******************************************************************************
-* Function    : pb_datastruct_list_que_head_data
+* Function    : os_ds_list_que_head_data
 * 
 * Author      : Chen Hao
 * 

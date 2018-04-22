@@ -3,14 +3,14 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          pb_trace.c
+*  file name:          os_trace_log.c
 *  author:              Chen Hao
 *  version:             1.00
 *  file description:   trace log
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2017-8-16             1.00                    Chen Hao
+*  change summary:   2018-4-22             1.00                    Chen Hao
 *
 ******************************************************************************/
 /******************************************************************************
@@ -34,6 +34,8 @@
 const char *TRACE_MOD_NAME[DBG_MOD_END + 1] =
 {
     "OS",
+    "HAL",
+    "DEV",
     "NULL"
 };
 
@@ -126,7 +128,7 @@ void os_trace_info(const char *fmt, ...)
 }
 
 /******************************************************************************
-* Function    : pb_trace_debug
+* Function    : os_trace_debug
 *
 * Author      : Chen Hao
 *

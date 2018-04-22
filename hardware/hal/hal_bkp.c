@@ -3,20 +3,21 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          hal_board.c
+*  file name:          hal_bkp.c
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   board init support
+*  file description:   backup register
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-12      1.00                    Chen Hao
+*  change summary:   2018-4-13      1.00                    Chen Hao
 *
 ******************************************************************************/
 /******************************************************************************
 * Include Files
 ******************************************************************************/
-#include "hal_board.h"
+#include "hal_bkp.h"
+#include "hal_rcc.h"
 
 /******************************************************************************
 * Macros
@@ -30,48 +31,7 @@
 * Local Functions
 ******************************************************************************/
 /******************************************************************************
-* Function    : hal_board_init
-* 
-* Author      : Chen Hao
-* 
-* Parameters  : 
-* 
-* Return      : 
-* 
-* Description : board init
-******************************************************************************/
-void hal_board_init(void)
-{
-    SystemInit();
-
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, BOARD_APP_OFFSET);
-    NVIC_PriorityGroupConfig(BOARD_NVIC_PRIO_GROUP);
-}
-
-/******************************************************************************
-* Function    : hal_board_nvic_set_irq
-* 
-* Author      : Chen Hao
-* 
-* Parameters  : 
-* 
-* Return      : 
-* 
-* Description : set irq channel
-******************************************************************************/
-void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 SubPriority, FunctionalState Cmd)
-{
-    NVIC_InitTypeDef NVIC_InitStructure;
-
-    NVIC_InitStructure.NVIC_IRQChannel = IRQChannel;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = SubPriority;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = Cmd;
-    NVIC_Init(&NVIC_InitStructure);		
-}
-
-/******************************************************************************
-* Function    : hal_board_get_boot_type
+* Function    : hal_bkp_init
 * 
 * Author      : Chen Hao
 * 
@@ -81,40 +41,16 @@ void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 Su
 * 
 * Description : 
 ******************************************************************************/
-uint8 hal_board_get_boot_type(void)
+void hal_bkp_init(void)
 {
-    uint8 pwronType = HAL_PWRON_NORMAL;
-
-    //WWD and IWD rst
-    if ((RCC_GetFlagStatus(RCC_FLAG_WWDGRST) == SET)    
-        || (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET))
-    {
-        pwronType = HAL_PWRON_WDG;
-    }	
-    else
-    //Software rst
-    if (RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)
-    {
-        pwronType = HAL_PWRON_SOFTRST;
-    }
-    else
-    if (RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET)
-    {
-        pwronType = HAL_PWRON_NORMAL;
-    }	
-    else
-    //Key rst
-    if(RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET)
-    {
-        pwronType = HAL_PWRON_KEY;
-    }
-
-    RCC_ClearFlag();
-    return pwronType;
+    #if ( BOARD_BKP_ENABLE == 1 )
+    /* Enable PWR and BKP clocks */
+    hal_rcc_enable(BOARD_BKP_RCC);
+    #endif /*BOARD_BKP_ENABLE*/
 }
 
 /******************************************************************************
-* Function    : hal_board_reset
+* Function    : hal_bkp_read
 * 
 * Author      : Chen Hao
 * 
@@ -124,9 +60,36 @@ uint8 hal_board_get_boot_type(void)
 * 
 * Description : 
 ******************************************************************************/
-void hal_board_reset(void)
+uint32 hal_bkp_read(uint32 addr)
 {
-    __disable_irq();
-    NVIC_SystemReset();
+    uint32 data = 0;
+
+    #if ( BOARD_BKP_ENABLE == 1 )
+    PWR_BackupAccessCmd(ENABLE);
+    data = BKP_ReadBackupRegister((uint16)addr);
+    PWR_BackupAccessCmd(DISABLE);
+    #endif /*BOARD_BKP_ENABLE*/
+
+    return data;
+}
+
+/******************************************************************************
+* Function    : hal_bkp_write
+* 
+* Author      : Chen Hao
+* 
+* Parameters  : 
+* 
+* Return      : 
+* 
+* Description : 
+******************************************************************************/
+void hal_bkp_write(uint32 addr, uint32 data)
+{
+    #if ( BOARD_BKP_ENABLE == 1 )
+    PWR_BackupAccessCmd(ENABLE);
+    BKP_WriteBackupRegister((uint16)addr, (uint16)data);
+    PWR_BackupAccessCmd(DISABLE);
+    #endif /*BOARD_BKP_ENABLE*/
 }
 

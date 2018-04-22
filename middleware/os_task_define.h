@@ -3,46 +3,56 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          hal_board.h
+*  file name:          os_task_define.h
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   board init support
+*  file description:   RTOS task define type
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-12      1.00                    Chen Hao
+*  change summary:   2018-4-18      1.00                    Chen Hao
 *
 ******************************************************************************/
-#ifndef __HAL_BOARD_H__
-#define __HAL_BOARD_H__
+#ifndef __OS_TASK_DEFINE_H__
+#define __OS_TASK_DEFINE_H__
 /******************************************************************************
 * Include Files
 ******************************************************************************/
 #include "basetype.h"
-#include "board_config.h"
+#include "os_middleware.h"
 
 /******************************************************************************
 * Macros
 ******************************************************************************/
 
 /******************************************************************************
-* Types
+* Enums
 ******************************************************************************/
 typedef enum
 {
-    HAL_PWRON_NORMAL = 0,
-    HAL_PWRON_WDG,
-    HAL_PWRON_KEY,
-    HAL_PWRON_SOFTRST
-}HAL_PWRON_STATUS;
+    OS_TASK_ITEM_BEGIN = 0,
+    OS_TASK_ITEM_END
+}OS_TASK_ITEM;
 
 /******************************************************************************
-* Extern variable
+* Types
 ******************************************************************************/
-extern void hal_board_init(void);
-extern void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 SubPriority, FunctionalState Cmd);
-extern uint8 hal_board_get_boot_type(void);
-extern void hal_board_reset(void);
+typedef struct
+{
+    void (*function)(void *);
+    void * const param;
+    const char * const name;
+    uint32 stackSize;
+    uint32 priority;
+    void * hdlr;
+}OS_TASK_INFO_TYPE;
 
-#endif /*__HAL_BOARD_H__*/
+/******************************************************************************
+* Global Functions
+******************************************************************************/
+extern void os_task_create_all(void);
+extern void os_task_print_free_stack(void);
+extern void os_task_print_free_heap(void);
+
+#endif /* __OS_TASK_DEFINE_H__ */
 

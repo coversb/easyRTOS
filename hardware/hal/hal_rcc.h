@@ -3,33 +3,36 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          os_config.h
+*  file name:          hal_rcc.h
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   manage macro to enable/disable os functions
+*  file description:   clock init
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-11      1.00                    Chen Hao
+*  change summary:   2018-4-18      1.00                    Chen Hao
 *
 ******************************************************************************/
-#ifndef __OS_CONFIG_H__
-#define __OS_CONFIG_H__
+#ifndef __HAL_RCC_H__
+#define __HAL_RCC_H__
 /******************************************************************************
 * Include Files
 ******************************************************************************/
-#include "hal_usart.h"
+#include "basetype.h"
+#include "board_config.h"
 
 /******************************************************************************
 * Macros
 ******************************************************************************/
-//enable os trace log
-#define OS_TRACE_LOG            1
-#define OS_TRACE_LOG_SIZE   255 //bytes
-#define OS_TRACE_COM hwSerial1
 
-//tasks init sync
-#define OS_TASK_SYNC_CHECK_INTERVAL 100 //ms
+/******************************************************************************
+* Types
+******************************************************************************/
 
-#endif /* __OS_CONFIG_H__ */
+/******************************************************************************
+* Extern variable
+******************************************************************************/
+extern void hal_rcc_enable(uint32 rcc);
+
+#endif /*__HAL_RCC_H__*/
 

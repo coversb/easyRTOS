@@ -3,20 +3,22 @@
 *     Open source
 *        
 *******************************************************************************
-*  file name:          hal_board.c
+*  file name:          hal_wdg.c
 *  author:              Chen Hao
 *  version:             1.00
-*  file description:   board init support
+*  file description:   hardware watchdog
 *******************************************************************************
 *  revision history:    date               version                  author
 *
-*  change summary:   2018-4-12      1.00                    Chen Hao
+*  change summary:   2018-4-13      1.00                    Chen Hao
 *
 ******************************************************************************/
 /******************************************************************************
 * Include Files
 ******************************************************************************/
-#include "hal_board.h"
+#include "hal_wdg.h"
+#include "hal_rcc.h"
+#include "hal_gpio.h"
 
 /******************************************************************************
 * Macros
@@ -29,8 +31,9 @@
 /******************************************************************************
 * Local Functions
 ******************************************************************************/
+#if ( BOARD_IWDG_ENABLE == 1)
 /******************************************************************************
-* Function    : hal_board_init
+* Function    : hal_iwdg_init
 * 
 * Author      : Chen Hao
 * 
@@ -38,18 +41,19 @@
 * 
 * Return      : 
 * 
-* Description : board init
+* Description : internal watchdog init
 ******************************************************************************/
-void hal_board_init(void)
+static void hal_iwdg_init(void)
 {
-    SystemInit();
-
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, BOARD_APP_OFFSET);
-    NVIC_PriorityGroupConfig(BOARD_NVIC_PRIO_GROUP);
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_256);
+    IWDG_SetReload(0xFFF); //0xfff*256/40k=26s
+    IWDG_ReloadCounter();
+    IWDG_Enable();
 }
 
 /******************************************************************************
-* Function    : hal_board_nvic_set_irq
+* Function    : hal_iwdg_feed
 * 
 * Author      : Chen Hao
 * 
@@ -57,21 +61,54 @@ void hal_board_init(void)
 * 
 * Return      : 
 * 
-* Description : set irq channel
+* Description : internal watchdog feed
 ******************************************************************************/
-void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 SubPriority, FunctionalState Cmd)
+static void hal_iwdg_feed(void)
 {
-    NVIC_InitTypeDef NVIC_InitStructure;
+    IWDG_ReloadCounter();
+}
+#endif /*BOARD_IWDG_ENABLE*/
 
-    NVIC_InitStructure.NVIC_IRQChannel = IRQChannel;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriority;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = SubPriority;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = Cmd;
-    NVIC_Init(&NVIC_InitStructure);		
+#if ( BOARD_EWDG_ENABLE == 1 )
+/******************************************************************************
+* Function    : hal_ewdg_init
+* 
+* Author      : Chen Hao
+* 
+* Parameters  : 
+* 
+* Return      : 
+* 
+* Description : external watchdog feed
+******************************************************************************/
+static void hal_ewdg_init(void)
+{
+    hal_rcc_enable(BOARD_EXT_WDG_IO_RCC);
+    hal_gpio_set_mode(BOARD_EXT_WDG_PIN, GPIO_Mode_Out_PP);
+    hal_gpio_set(BOARD_EXT_WDG_PIN, HAL_GPIO_LOW);
 }
 
 /******************************************************************************
-* Function    : hal_board_get_boot_type
+* Function    : hal_ewdg_init
+* 
+* Author      : Chen Hao
+* 
+* Parameters  : 
+* 
+* Return      : 
+* 
+* Description : external watchdog feed
+******************************************************************************/
+static void hal_ewdg_feed(void)
+{
+    hal_gpio_set(BOARD_EXT_WDG_PIN, HAL_GPIO_LOW);
+    for(int32 delay = 100; delay >= 0; --delay);
+    hal_gpio_set(BOARD_EXT_WDG_PIN, HAL_GPIO_HIGH);
+}
+#endif /*BOARD_EWDG_ENABLE*/
+
+/******************************************************************************
+* Function    : hal_wdg_init
 * 
 * Author      : Chen Hao
 * 
@@ -81,40 +118,19 @@ void hal_board_nvic_set_irq(uint8 IRQChannel, uint8 PreemptionPriority, uint8 Su
 * 
 * Description : 
 ******************************************************************************/
-uint8 hal_board_get_boot_type(void)
+void hal_wdg_init(void)
 {
-    uint8 pwronType = HAL_PWRON_NORMAL;
-
-    //WWD and IWD rst
-    if ((RCC_GetFlagStatus(RCC_FLAG_WWDGRST) == SET)    
-        || (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET))
-    {
-        pwronType = HAL_PWRON_WDG;
-    }	
-    else
-    //Software rst
-    if (RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)
-    {
-        pwronType = HAL_PWRON_SOFTRST;
-    }
-    else
-    if (RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET)
-    {
-        pwronType = HAL_PWRON_NORMAL;
-    }	
-    else
-    //Key rst
-    if(RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET)
-    {
-        pwronType = HAL_PWRON_KEY;
-    }
-
-    RCC_ClearFlag();
-    return pwronType;
+    #if ( BOARD_IWDG_ENABLE == 1)
+    hal_iwdg_init();
+    #endif /*BOARD_IWDG_ENABLE*/
+    
+    #if ( BOARD_EWDG_ENABLE == 1 )
+    hal_ewdg_init();
+    #endif /*BOARD_EWDG_ENABLE*/
 }
 
 /******************************************************************************
-* Function    : hal_board_reset
+* Function    : hal_wdg_feed
 * 
 * Author      : Chen Hao
 * 
@@ -124,9 +140,14 @@ uint8 hal_board_get_boot_type(void)
 * 
 * Description : 
 ******************************************************************************/
-void hal_board_reset(void)
+void hal_wdg_feed(void)
 {
-    __disable_irq();
-    NVIC_SystemReset();
+    #if ( BOARD_IWDG_ENABLE == 1)
+    hal_iwdg_feed();
+    #endif /*BOARD_IWDG_ENABLE*/
+    
+    #if ( BOARD_EWDG_ENABLE == 1 )
+    hal_ewdg_feed();
+    #endif /*BOARD_EWDG_ENABLE*/
 }
 
