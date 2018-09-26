@@ -5,7 +5,7 @@ This open source framework aim at:
 * Easy to port any MCU platform to the application
 
 ## Architeture
-![image](https://github.com/coversb/easyRTOS/doc/resume.png)
+![image](https://github.com/coversb/easyRTOS/blob/master/doc/resume.png)
 
 ## Folders
 * common --- base type defination
